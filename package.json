@@ -1,0 +1,13 @@
+{
+  "name": "qa-portfolio-project",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Full-stack application and test automation portfolio project",
+  "scripts": {
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "test:e2e": "pnpm --filter e2e test",
+    "test:api": "pnpm --filter api test",
+    "test:performance": "pnpm --filter performance test"
+  }
+}
