@@ -14,6 +14,27 @@ async function getUsers(req, res) {
     }
 }
 
+async function createUser(req, res) {
+    try {
+        const user = await userService.createUser(req.body);
+
+        return res.status(201).json(user);
+    } catch (error) {
+        console.error('Error creating user:', error.message);
+
+        if (error.statusCode) {
+            return res.status(error.statusCode).json({
+                message: error.message
+            });
+        }
+
+        return res.status(500).json({
+            message: 'Internal server error'
+        });
+    }
+}
+
 module.exports = {
-    getUsers
+    getUsers,
+    createUser
 };
