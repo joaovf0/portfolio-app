@@ -1,4 +1,5 @@
 const userRepository = require('../repositories/user.repository');
+const { hashPassword } = require('../utils/password');
 
 async function getAllUsers() {
     return userRepository.findAll();
@@ -23,8 +24,8 @@ async function createUser({ name, email, password, role = 'user' }) {
         throw error;
     }
 
-    // Temporariamente usando o password diretamente.
-    const passwordHash = password;
+
+    const passwordHash = await hashPassword(password);
 
     return userRepository.create({
         name: name.trim(),

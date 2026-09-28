@@ -2,3 +2,5 @@ packages:
   - "apps/*"
   - "tests/*"
   - "packages/*"
+allowBuilds:
+  bcrypt: true
