@@ -36,9 +36,9 @@ test.describe('POST /api/users', () => {
 
         const body = await response.json();
 
-        expect(body.message).toBe(
-            'Name, email and password are required'
-        );
+        expect(body.message).toBe('Validation failed');
+        expect(body.details.email).toBe('Email is required');
+        expect(body.details.password).toBe('Password is required');
     });
 
     test('should return 409 when email already exists', async ({ request }) => {
@@ -67,5 +67,41 @@ test.describe('POST /api/users', () => {
         const body = await secondResponse.json();
 
         expect(body.message).toBe('Email already exists');
+    });
+
+    test('should return 400 when email is invalid', async ({ request }) => {
+        const response = await request.post('/api/users', {
+            data: {
+                name: 'API Test User',
+                email: 'email-invalido',
+                password: 'Password123'
+            }
+        });
+
+        expect(response.status()).toBe(400);
+
+        const body = await response.json();
+
+        expect(body.message).toBe('Validation failed');
+        expect(body.details.email).toBe('Email must be valid');
+    });
+
+    test('should return 400 when password is too short', async ({ request }) => {
+        const response = await request.post('/api/users', {
+            data: {
+                name: 'API Test User',
+                email: 'short-password@example.com',
+                password: '123'
+            }
+        });
+
+        expect(response.status()).toBe(400);
+
+        const body = await response.json();
+
+        expect(body.message).toBe('Validation failed');
+        expect(body.details.password).toBe(
+            'Password must be at least 8 characters'
+        );
     });
 });

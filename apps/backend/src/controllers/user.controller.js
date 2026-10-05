@@ -22,11 +22,12 @@ async function createUser(req, res) {
     } catch (error) {
         console.error('Error creating user:', error.message);
 
-        if (error.statusCode) {
-            return res.status(error.statusCode).json({
-                message: error.message
-            });
-        }
+    if (error.statusCode) {
+        return res.status(error.statusCode).json({
+            message: error.message,
+            ...(error.details && { details: error.details })
+        });
+    }
 
         return res.status(500).json({
             message: 'Internal server error'
