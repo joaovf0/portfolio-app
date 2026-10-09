@@ -1,3 +1,7 @@
+require('dotenv').config({
+    path: '../../apps/backend/.env'
+});
+
 const { defineConfig } = require('@playwright/test');
 
 module.exports = defineConfig({
