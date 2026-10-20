@@ -1,3 +1,6 @@
+
+const { deleteUserById } = require('./database.helper');
+
 async function createUser(request) {
     const uniqueEmail = `fixture-${Date.now()}@example.com`;
 
@@ -9,7 +12,19 @@ async function createUser(request) {
         }
     });
 
-    return response.json();
+    const body = await response.json();
+
+    if (response.status() !== 201) {
+        if (body.id){
+            await deleteUserById(body.id);
+        }
+
+        throw new Error(
+            `Failed to create test user. Expected status 201, received ${response.status()}`
+        );
+    }
+
+    return body;
 }
 
 module.exports = {
