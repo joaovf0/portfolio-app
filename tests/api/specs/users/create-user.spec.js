@@ -126,4 +126,67 @@ test.describe('POST /api/users', () => {
             'Password must be at least 8 characters'
         );
     });
+
+    test('should normalize email when creating a user', async ({ request }) => {
+        const uniqueEmail = ` QA-${Date.now()}@EXAMPLE.COM `;
+
+        let createdUser;
+
+        try {
+            const response = await request.post('/api/users', {
+                data: {
+                    name: 'Email Normalization Test',
+                    email: uniqueEmail,
+                    password: 'Password123'
+                }
+            });
+
+            const body = await response.json();
+            createdUser = body.id ? body : undefined;
+
+            expect(response.status()).toBe(201);
+            expect(body.email).toBe(uniqueEmail.trim().toLowerCase());
+        } finally {
+            if (createdUser) {
+                await deleteUserById(createdUser.id);
+            }
+        }
+    });
+
+    test('should reject duplicate emails with different casing', async ({ request }) => {
+        const uniqueEmail = `QA-${Date.now()}@example.com`;
+        let createdUser;
+
+        try {
+            const firstResponse = await request.post('/api/users', {
+                data: {
+                    name: 'First User',
+                    email: uniqueEmail,
+                    password: 'Password123'
+                }
+            });
+
+            const firstBody = await firstResponse.json();
+            createdUser = firstBody.id ? firstBody : undefined;
+
+            expect(firstResponse.status()).toBe(201);
+
+            const secondResponse = await request.post('/api/users', {
+                data: {
+                    name: 'Second User',
+                    email: uniqueEmail.toLowerCase(),
+                    password: 'Password123'
+                }
+            });
+
+            expect(secondResponse.status()).toBe(409);
+
+            const secondBody = await secondResponse.json();
+            expect(secondBody.message).toBe('Email already exists');
+        } finally {
+            if (createdUser) {
+                await deleteUserById(createdUser.id);
+            }
+        }
+    });
 });
