@@ -189,4 +189,123 @@ test.describe('POST /api/users', () => {
             }
         }
     });
+
+    test('should create user with 2 character name', async ({ request }) => {
+        const uniqueEmail = `qa-${Date.now()}@example.com`;
+        let createdUser;
+
+        try {
+
+            const response = await request.post('/api/users', {
+                data: {
+                    name: 'QA',
+                    email: uniqueEmail,
+                    password: 'Password123'
+                }
+            });
+
+            const body = await response.json();
+            createdUser = body.id ? body : undefined;
+
+            expect(response.status()).toBe(201);
+            expect(body.id).toBeDefined();
+            expect(body.name).toBe('QA');
+        }
+        finally {
+            if (createdUser) {
+                await deleteUserById(createdUser.id);
+            }
+        }
+    });
+
+    test('should reject a name shorter than 2 characters', async ({ request }) => {
+        const uniqueEmail = `qa-${Date.now()}@example.com`;
+        let createdUser;
+
+        try {
+
+            const response = await request.post('/api/users', {
+                data: {
+                    name: 'Q',
+                    email: uniqueEmail,
+                    password: 'Password123'
+                }
+            });
+
+            const body = await response.json();
+            createdUser = body.id ? body : undefined;
+
+            expect(response.status()).toBe(400);
+            expect(body.message).toBe('Validation failed');
+            expect(body.details.name).toBe(
+                'Name must be at least 2 characters'
+            );
+        }
+        finally {
+            if (createdUser) {
+                await deleteUserById(createdUser.id);
+            }
+        }
+    });
+
+    test('should create user with 120 character name', async ({ request }) => {
+        const uniqueEmail = `qa-${Date.now()}@example.com`;
+        const longName = 'A'.repeat(120);
+        let createdUser;
+
+        try {
+
+            const response = await request.post('/api/users', {
+                data: {
+                    name: longName,
+                    email: uniqueEmail,
+                    password: 'Password123'
+                }
+            });
+
+            const body = await response.json();
+            createdUser = body.id ? body : undefined;
+
+            expect(response.status()).toBe(201);
+            expect(body.id).toBeDefined();
+            expect(body.name).toBe(longName);
+        }
+        finally {
+            if (createdUser) {
+                await deleteUserById(createdUser.id);
+            }
+        }
+    });
+
+    test('should reject a name longer than 120 characters', async ({ request }) => {
+        const uniqueEmail = `qa-${Date.now()}@example.com`;
+        const longName = 'A'.repeat(121);
+        let createdUser;
+
+        try {
+
+            const response = await request.post('/api/users', {
+                data: {
+                    name: longName,
+                    email: uniqueEmail,
+                    password: 'Password123'
+                }
+            });
+
+            const body = await response.json();
+            createdUser = body.id ? body : undefined;
+
+            expect(response.status()).toBe(400);
+            expect(body.message).toBe('Validation failed');
+            expect(body.details.name).toBe(
+                'Name must not exceed 120 characters'
+            );
+        }
+        finally {
+            if (createdUser) {
+                await deleteUserById(createdUser.id);
+            }
+        }
+    });
+
 });
