@@ -308,4 +308,63 @@ test.describe('POST /api/users', () => {
         }
     });
 
+    test('should reject a password shorter than 8 characters', async ({ request }) => {
+        const uniqueEmail = `qa-${Date.now()}@example.com`;
+        let createdUser;
+
+        try {
+
+            const response = await request.post('/api/users', {
+                data: {
+                    name: 'QA User',
+                    email: uniqueEmail,
+                    password: 'Pass123'
+                }
+            });
+
+            const body = await response.json();
+            createdUser = body.id ? body : undefined;
+
+            expect(response.status()).toBe(400);
+            expect(body.message).toBe('Validation failed');
+            expect(body.details.password).toBe(
+                'Password must be at least 8 characters'
+            );
+        }
+        finally {
+            if (createdUser) {
+                await deleteUserById(createdUser.id);
+            }
+        }
+    });
+
+    test('should create user with 8 character password', async ({ request }) => {
+        const uniqueEmail = `qa-${Date.now()}@example.com`;
+        const shortPassword = 'Password';
+        let createdUser;
+
+        try {
+
+            const response = await request.post('/api/users', {
+                data: {
+                    name: 'QA User',
+                    email: uniqueEmail,
+                    password: shortPassword
+                }
+            });
+
+            const body = await response.json();
+            createdUser = body.id ? body : undefined;
+
+            expect(response.status()).toBe(201);
+            expect(body.id).toBeDefined();
+            expect(body).not.toHaveProperty('password');
+            expect(body).not.toHaveProperty('password_hash');
+        }
+        finally {
+            if (createdUser) {
+                await deleteUserById(createdUser.id);
+            }
+        }
+    });
 });
