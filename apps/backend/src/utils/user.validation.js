@@ -15,7 +15,7 @@ function validateCreateUser({ name, email, password }) {
         errors.email = 'Email must be valid';
     }
 
-    if (!password) {
+    if (typeof password !== 'string' || !password.trim()) {
         errors.password = 'Password is required';
     } else if (password.length < 8) {
         errors.password = 'Password must be at least 8 characters';

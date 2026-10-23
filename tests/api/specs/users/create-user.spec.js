@@ -367,4 +367,64 @@ test.describe('POST /api/users', () => {
             }
         }
     });
+
+    test('should reject an empty password', async ({ request }) => {
+        const uniqueEmail = `qa-${Date.now()}@example.com`;
+        let createdUser;
+
+        try {
+
+            const response = await request.post('/api/users', {
+                data: {
+                    name: 'QA User',
+                    email: uniqueEmail,
+                    password: ''
+                }
+            });
+
+            const body = await response.json();
+            createdUser = body.id ? body : undefined;
+
+            expect(response.status()).toBe(400);
+            expect(body.message).toBe('Validation failed');
+            expect(body.details.password).toBe(
+                'Password is required'
+            );
+        }
+        finally {
+            if (createdUser) {
+                await deleteUserById(createdUser.id);
+            }
+        }
+    });
+
+    test('should reject a password containing only whitespace', async ({ request }) => {
+        const uniqueEmail = `qa-${Date.now()}@example.com`;
+        let createdUser;
+
+        try {
+
+            const response = await request.post('/api/users', {
+                data: {
+                    name: 'QA User',
+                    email: uniqueEmail,
+                    password: ' '.repeat(8)
+                }
+            });
+
+            const body = await response.json();
+            createdUser = body.id ? body : undefined;
+
+            expect(response.status()).toBe(400);
+            expect(body.message).toBe('Validation failed');
+            expect(body.details.password).toBe(
+                'Password is required'
+            );
+        }
+        finally {
+            if (createdUser) {
+                await deleteUserById(createdUser.id);
+            }
+        }
+    });
 });
