@@ -506,4 +506,31 @@ test.describe('POST /api/users', () => {
             }
         }
     });
+
+    test('should return 400 when email contains whitespace', async ({ request }) => {
+        let createdUser;
+
+        try {
+
+            const response = await request.post('/api/users', {
+                data: {
+                    name: 'QA User',
+                    email: 'qa user@example.com',
+                    password: 'Password123'
+                }
+            });
+
+            const body = await response.json();
+            createdUser = body.id ? body : undefined;
+
+            expect(response.status()).toBe(400);
+            expect(body.message).toBe('Validation failed');
+            expect(body.details.email).toBe('Email must be valid');
+        }
+        finally {
+            if (createdUser) {
+                await deleteUserById(createdUser.id);
+            }
+        }
+    });
 });
