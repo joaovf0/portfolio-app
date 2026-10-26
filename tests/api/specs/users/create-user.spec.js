@@ -427,4 +427,31 @@ test.describe('POST /api/users', () => {
             }
         }
     });
+
+    test('should reject an email containing only whitespace', async ({ request }) => {
+        let createdUser;
+
+        try {
+
+            const response = await request.post('/api/users', {
+                data: {
+                    name: 'QA User',
+                    email: ' '.repeat(8),
+                    password: 'Password123'
+                }
+            });
+
+            const body = await response.json();
+            createdUser = body.id ? body : undefined;
+
+            expect(response.status()).toBe(400);
+            expect(body.message).toBe('Validation failed');
+            expect(body.details.email).toBe('Email is required');
+        }
+        finally {
+            if (createdUser) {
+                await deleteUserById(createdUser.id);
+            }
+        }
+    });
 });
