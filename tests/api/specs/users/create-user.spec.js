@@ -5,7 +5,7 @@ test.describe('POST /api/users', () => {
     test('should create a user successfully', async ({ request }) => {
         const uniqueEmail = `qa-${Date.now()}@example.com`;
         let createdUser;
-        
+
         try {
 
             const response = await request.post('/api/users', {
@@ -18,7 +18,7 @@ test.describe('POST /api/users', () => {
 
             const body = await response.json();
             createdUser = body.id ? body : undefined;
-            
+
             expect(response.status()).toBe(201);
 
             expect(body.id).toBeDefined();
@@ -28,7 +28,7 @@ test.describe('POST /api/users', () => {
 
             expect(body).not.toHaveProperty('password');
             expect(body).not.toHaveProperty('password_hash');
-        } 
+        }
         finally {
             if (createdUser) {
                 await deleteUserById(createdUser.id);
@@ -37,22 +37,30 @@ test.describe('POST /api/users', () => {
     });
 
     test('should return 400 when required fields are missing', async ({ request }) => {
-        const response = await request.post('/api/users', {
-            data: {
-                name: 'API Test User'
+        let createdUser;
+        try {
+            const response = await request.post('/api/users', {
+                data: {
+                    name: 'API Test User'
+                }
+            });
+
+            const body = await response.json();
+            createdUser = body.id ? body : undefined;
+
+            expect(response.status()).toBe(400);
+            expect(body.message).toBe('Validation failed');
+            expect(body.details.email).toBe('Email is required');
+            expect(body.details.password).toBe('Password is required');
+
+        } finally {
+            if (createdUser) {
+                await deleteUserById(createdUser.id);
             }
-        });
-
-        expect(response.status()).toBe(400);
-
-        const body = await response.json();
-
-        expect(body.message).toBe('Validation failed');
-        expect(body.details.email).toBe('Email is required');
-        expect(body.details.password).toBe('Password is required');
+        }
     });
 
-    
+
     test('should return 409 when email already exists', async ({ request }) => {
         const uniqueEmail = `duplicate-${Date.now()}@example.com`;
         let createdUser;
@@ -92,39 +100,83 @@ test.describe('POST /api/users', () => {
 
 
     test('should return 400 when email is invalid', async ({ request }) => {
-        const response = await request.post('/api/users', {
-            data: {
-                name: 'API Test User',
-                email: 'email-invalido',
-                password: 'Password123'
+        let createdUser;
+
+        try {
+            const response = await request.post('/api/users', {
+                data: {
+                    name: 'API Test User',
+                    email: 'email-invalido',
+                    password: 'Password123'
+                }
+            });
+
+            const body = await response.json();
+            createdUser = body.id ? body : undefined;
+
+            expect(response.status()).toBe(400);
+            expect(body.message).toBe('Validation failed');
+            expect(body.details.email).toBe('Email must be valid');
+
+        } finally {
+            if (createdUser) {
+                await deleteUserById(createdUser.id);
             }
-        });
+        }
+    });
 
-        expect(response.status()).toBe(400);
+    test('should return 400 when email has no dot', async ({ request }) => {
+        let createdUser;
 
-        const body = await response.json();
+        try {
+            const response = await request.post('/api/users', {
+                data: {
+                    name: 'API Test User',
+                    email: 'qa@examplecom',
+                    password: 'Password123'
+                }
+            });
 
-        expect(body.message).toBe('Validation failed');
-        expect(body.details.email).toBe('Email must be valid');
+            const body = await response.json();
+            createdUser = body.id ? body : undefined;
+
+            expect(response.status()).toBe(400);
+            expect(body.message).toBe('Validation failed');
+            expect(body.details.email).toBe('Email must be valid');
+        } finally {
+            if (createdUser) {
+                await deleteUserById(createdUser.id);
+            }
+        }
     });
 
     test('should return 400 when password is too short', async ({ request }) => {
-        const response = await request.post('/api/users', {
-            data: {
-                name: 'API Test User',
-                email: 'short-password@example.com',
-                password: '123'
+        let createdUser;
+
+        try {
+
+            const response = await request.post('/api/users', {
+                data: {
+                    name: 'API Test User',
+                    email: 'short-password@example.com',
+                    password: '123'
+                }
+            });
+
+            const body = await response.json();
+            createdUser = body.id ? body : undefined;
+
+            expect(response.status()).toBe(400);
+            expect(body.message).toBe('Validation failed');
+            expect(body.details.password).toBe(
+                'Password must be at least 8 characters'
+            );
+
+        } finally {
+            if (createdUser) {
+                await deleteUserById(createdUser.id);
             }
-        });
-
-        expect(response.status()).toBe(400);
-
-        const body = await response.json();
-
-        expect(body.message).toBe('Validation failed');
-        expect(body.details.password).toBe(
-            'Password must be at least 8 characters'
-        );
+        }
     });
 
     test('should normalize email when creating a user', async ({ request }) => {
@@ -153,7 +205,7 @@ test.describe('POST /api/users', () => {
         }
     });
 
-    test('should reject duplicate emails with different casing', async ({ request }) => {
+    test('should return 409 for duplicate emails with different casing', async ({ request }) => {
         const uniqueEmail = `QA-${Date.now()}@example.com`;
         let createdUser;
 
@@ -218,7 +270,7 @@ test.describe('POST /api/users', () => {
         }
     });
 
-    test('should reject a name shorter than 2 characters', async ({ request }) => {
+    test('should return 400 for a name shorter than 2 characters', async ({ request }) => {
         const uniqueEmail = `qa-${Date.now()}@example.com`;
         let createdUser;
 
@@ -277,7 +329,7 @@ test.describe('POST /api/users', () => {
         }
     });
 
-    test('should reject a name longer than 120 characters', async ({ request }) => {
+    test('should return 400 for a name longer than 120 characters', async ({ request }) => {
         const uniqueEmail = `qa-${Date.now()}@example.com`;
         const longName = 'A'.repeat(121);
         let createdUser;
@@ -308,7 +360,7 @@ test.describe('POST /api/users', () => {
         }
     });
 
-    test('should reject a password shorter than 8 characters', async ({ request }) => {
+    test('should return 400 for a password shorter than 8 characters', async ({ request }) => {
         const uniqueEmail = `qa-${Date.now()}@example.com`;
         let createdUser;
 
@@ -368,7 +420,7 @@ test.describe('POST /api/users', () => {
         }
     });
 
-    test('should reject an empty password', async ({ request }) => {
+    test('should return 400 for an empty password', async ({ request }) => {
         const uniqueEmail = `qa-${Date.now()}@example.com`;
         let createdUser;
 
@@ -398,7 +450,7 @@ test.describe('POST /api/users', () => {
         }
     });
 
-    test('should reject a password containing only whitespace', async ({ request }) => {
+    test('should return 400 for a password containing only whitespace', async ({ request }) => {
         const uniqueEmail = `qa-${Date.now()}@example.com`;
         let createdUser;
 
@@ -428,7 +480,7 @@ test.describe('POST /api/users', () => {
         }
     });
 
-    test('should reject an email containing only whitespace', async ({ request }) => {
+    test('should return 400 for an email containing only whitespace', async ({ request }) => {
         let createdUser;
 
         try {
