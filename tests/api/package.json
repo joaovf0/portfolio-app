@@ -9,7 +9,8 @@
     "test:debug": "playwright test --debug"
   },
   "devDependencies": {
-    "@playwright/test": "^1.56.1"
+    "@playwright/test": "^1.56.1",
+    "pg": "^8.23.0"
   },
   "dependencies": {
     "dotenv": "^17.4.2"

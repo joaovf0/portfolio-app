@@ -1,5 +1,7 @@
+const path = require('node:path');
+
 require('dotenv').config({
-    path: '../../apps/backend/.env'
+    path: path.resolve(__dirname, '../../apps/backend/.env')
 });
 
 const { defineConfig } = require('@playwright/test');
