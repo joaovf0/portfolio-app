@@ -6,6 +6,7 @@
   "scripts": {
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
+    "test:unit": "pnpm --filter backend test",
     "test:e2e": "pnpm --filter e2e test",
     "test:api": "pnpm --filter api test",
     "test:performance": "pnpm --filter performance test"
