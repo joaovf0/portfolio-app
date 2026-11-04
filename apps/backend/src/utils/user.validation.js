@@ -1,7 +1,11 @@
 function validateCreateUser({ name, email, password }) {
     const errors = {};
 
-    if (!name || !name.trim()) {
+    if (name === undefined || name === null || name === '') {
+        errors.name = 'Name is required';
+    } else if (typeof name !== 'string') {
+        errors.name = 'Name must be a string';
+    } else if (!name.trim()) {
         errors.name = 'Name is required';
     } else if (name.trim().length < 2) {
         errors.name = 'Name must be at least 2 characters';
@@ -9,7 +13,11 @@ function validateCreateUser({ name, email, password }) {
         errors.name = 'Name must not exceed 120 characters';
     }
 
-    if (!email || !email.trim()) {
+    if (email === undefined || email === null || email === '') {
+        errors.email = 'Email is required';
+    } else if (typeof email !== 'string') {
+        errors.email = 'Email must be a string';
+    } else if (!email.trim()) {
         errors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
         errors.email = 'Email must be valid';

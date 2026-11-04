@@ -256,7 +256,7 @@ test('should return a password error when password is too short', () => {
     });
 });
 
-test('should return a password error when password is not a string', () => {
+test('should return a password error when password is a number', () => {
     const input = {
         name: 'QA User',
         email: 'qa@example.com',
@@ -269,6 +269,119 @@ test('should return a password error when password is not a string', () => {
         password: 'Password is required'
     });
 });
+
+test('should return a password error when password is an object', () => {
+    const input = {
+        name: 'QA User',
+        email: 'qa@example.com',
+        password: { value: 'Password123' }
+    };
+
+    const errors = validateCreateUser(input);
+
+    assert.deepStrictEqual(errors, {
+        password: 'Password is required'
+    });
+});
+
+test('should return a password error when password is an array', () => {
+    const input = {
+        name: 'QA User',
+        email: 'qa@example.com',
+        password: ['Password123']
+    };
+
+    const errors = validateCreateUser(input);
+
+    assert.deepStrictEqual(errors, {
+        password: 'Password is required'
+    });
+});
+
+test('should return a name error when name is a number', () => {
+    const input = {
+        name: 123,
+        email: 'qa@example.com',
+        password: 'Password123'
+    };
+
+    const errors = validateCreateUser(input);
+
+    assert.deepStrictEqual(errors, {
+        name: 'Name must be a string'
+    });
+});
+
+test('should return a name error when name is an object', () => {
+    const input = {
+        name: { first: 'QA', last: 'User' },
+        email: 'qa@example.com',
+        password: 'Password123'
+    };
+
+    const errors = validateCreateUser(input);
+
+    assert.deepStrictEqual(errors, {
+        name: 'Name must be a string'
+    });
+});
+
+test('should return a name error when name is an array', () => {
+    const input = {
+        name: ['QA', 'User'],
+        email: 'qa@example.com',
+        password: 'Password123'
+    };
+
+    const errors = validateCreateUser(input);
+
+    assert.deepStrictEqual(errors, {
+        name: 'Name must be a string'
+    });
+});
+
+test('should return an email error when email is a number', () => {
+    const input = {
+        name: 'QA User',
+        email: 123,
+        password: 'Password123'
+    };
+
+    const errors = validateCreateUser(input);
+
+    assert.deepStrictEqual(errors, {
+        email: 'Email must be a string'
+    });
+});
+
+test('should return an email error when email is an object', () => {
+    const input = {
+        name: 'QA User',
+        email: { address: 'qa@example.com' },
+        password: 'Password123'
+    };
+
+    const errors = validateCreateUser(input);
+
+    assert.deepStrictEqual(errors, {
+        email: 'Email must be a string'
+    });
+});
+
+test('should return an email error when email is an array', () => {
+    const input = {
+        name: 'QA User',
+        email: ['qa@example.com'],
+        password: 'Password123'
+    };
+
+    const errors = validateCreateUser(input);
+
+    assert.deepStrictEqual(errors, {
+        email: 'Email must be a string'
+    });
+});
+
 
 test('should return multiple errors when multiple fields are invalid', () => {
     const input = {
