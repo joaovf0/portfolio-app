@@ -533,4 +533,59 @@ test.describe('POST /api/users', () => {
             }
         }
     });
+
+    test('should return 400 when name is a number', async ({ request }) => {
+        let createdUser;
+        const uniqueEmail = `qa-${Date.now()}@example.com`;
+
+        try {
+
+            const response = await request.post('/api/users', {
+                data: {
+                    name: 12345,
+                    email: uniqueEmail,
+                    password: 'Password123'
+                }
+            });
+
+            const body = await response.json();
+            createdUser = body.id ? body : undefined;
+
+            expect(response.status()).toBe(400);
+            expect(body.message).toBe('Validation failed');
+            expect(body.details.name).toBe('Name must be a string');
+        }
+        finally {
+            if (createdUser) {
+                await deleteUserById(createdUser.id);
+            }
+        }
+    });
+
+    test('should return 400 when email is an object', async ({ request }) => {
+        let createdUser;
+
+        try {
+
+            const response = await request.post('/api/users', {
+                data: {
+                    name: 'QA User',
+                    email: { address: 'qa@example.com' },
+                    password: 'Password123'
+                }
+            });
+
+            const body = await response.json();
+            createdUser = body.id ? body : undefined;
+
+            expect(response.status()).toBe(400);
+            expect(body.message).toBe('Validation failed');
+            expect(body.details.email).toBe('Email must be a string');
+        }
+        finally {
+            if (createdUser) {
+                await deleteUserById(createdUser.id);
+            }
+        }
+    });
 });
