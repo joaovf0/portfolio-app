@@ -588,4 +588,31 @@ test.describe('POST /api/users', () => {
             }
         }
     });
+
+    test('should ignore client-provided role when creating a user', async ({ request }) => {
+        const uniqueEmail = `qa-${Date.now()}@example.com`;
+        let createdUser;
+
+        try {
+            const response = await request.post('/api/users', {
+                data: {
+                    name: 'API Test User',
+                    email: uniqueEmail,
+                    password: 'Password123',
+                    role: 'admin'
+                }
+            });
+
+            const body = await response.json();
+            createdUser = body.id ? body : undefined;
+
+            expect(response.status()).toBe(201);
+            expect(body.id).toBeDefined();
+            expect(body.role).toBe('user');
+        } finally {
+            if (createdUser) {
+                await deleteUserById(createdUser.id);
+            }
+        }
+    });
 });
